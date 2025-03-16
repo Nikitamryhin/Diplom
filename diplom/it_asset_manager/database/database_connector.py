@@ -39,40 +39,41 @@ class DatabaseConnector:
         self.create_employees_table()
         self.create_devices_table()
 
-    def create_departments_table(self):
+    def create_tables(self):
         try:
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS departments (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT
+                    name TEXT NOT NULL
                 )
             """)
-            self.conn.commit()
-            print("Table 'departments' created (if it didn't exist)")
-        except sqlite3.Error as e:
-            print(f"Error creating table 'departments': {e}")
-            messagebox.showerror("Ошибка", f"Ошибка при создании таблицы 'departments': {e}")
-            if self.conn:
-                self.conn.rollback()
-            raise
-
-    def create_employees_table(self):
-        try:
             self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS employees (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT,
-                    position TEXT
+                    name TEXT NOT NULL,
+                    position TEXT,
+                    department_id INTEGER,
+                    FOREIGN KEY (department_id) REFERENCES departments(id)
                 )
             """)
-            self.conn.commit()
-            print("Table 'employees' created (if it didn't exist)")
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS devices (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    category TEXT,
+                    serial_number TEXT,
+                    status TEXT,
+                    department_id INTEGER,
+                    employee_id INTEGER,
+                    purchase_date TEXT,  -- Добавлено
+                    FOREIGN KEY (department_id) REFERENCES departments(id),
+                    FOREIGN KEY (employee_id) REFERENCES employees(id)
+                )
+            """)
+            self.connection.commit()
+            print("Table created (if it didn't exist)")
         except sqlite3.Error as e:
-            print(f"Error creating table 'employees': {e}")
-            messagebox.showerror("Ошибка", f"Ошибка при создании таблицы 'employees': {e}")
-            if self.conn:
-                self.conn.rollback()
-            raise
+            print(f"An error occurred: {e}")
 
     def create_devices_table(self):
         try:
