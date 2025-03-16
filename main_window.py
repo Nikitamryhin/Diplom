@@ -190,7 +190,11 @@ class MainWindow:
     def load_devices(self, department_id=None):
         """Загружает устройства из базы данных и отображает их в Treeview."""
         try:
-            self.devices = self.db_connector.fetch_all_devices(department_id)
+            if department_id is None:
+                 self.devices = self.db_connector.fetch_all_devices() # Исправлено
+            else:
+                 self.devices = self.db_connector.fetch_all_devices(department_id) # Исправлено
+
             # Очищаем Treeview перед загрузкой новых данных
             for item in self.tree.get_children():
                 self.tree.delete(item)
