@@ -25,16 +25,13 @@ class AddDepartmentWindow(tk.Toplevel):
 
     def add_department(self):
         """Добавляет новый отдел в базу данных."""
-        try:
-            name = self.name_entry.get()
-            if not name:
-                messagebox.showerror("Ошибка", "Введите название отдела.")
-                return
-
-            new_department = Department(name=name)
-            self.db_connector.insert_department(new_department)
-            messagebox.showinfo("Успех", "Отдел успешно добавлен!")
-            self.refresh_callback()  # Обновляем список отделов в главном окне (если это нужно)
-            self.destroy()
-        except Exception as e:
-            messagebox.showerror("Ошибка", f"Ошибка при добавлении отдела: {e}")
+        department_name = self.name_entry.get()
+        if department_name:
+            if self.db_connector.insert_department(department_name):  # Передаем только имя
+                messagebox.showinfo("Успех", "Отдел успешно добавлен.")
+                self.load_departments()  # Обновляем список отделов
+                self.root.destroy()
+            else:
+                messagebox.showerror("Ошибка", "Ошибка при добавлении отдела.")
+        else:
+            messagebox.showerror("Ошибка", "Пожалуйста, введите название отдела.")

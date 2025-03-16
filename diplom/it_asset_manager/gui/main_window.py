@@ -190,7 +190,11 @@ class MainWindow:
     def load_devices(self, department_id=None):
         """Загружает устройства из базы данных и отображает их в Treeview."""
         try:
-            self.devices = self.db_connector.fetch_all_devices(department_id)
+            if department_id is None:
+                self.devices = self.db_connector.fetch_all_devices()
+            else:
+                self.devices = self.db_connector.fetch_all_devices(department_id)
+
             # Очищаем Treeview перед загрузкой новых данных
             for item in self.tree.get_children():
                 self.tree.delete(item)
@@ -297,7 +301,8 @@ class MainWindow:
 
     def open_add_employee_window(self):
         """Открывает окно для добавления нового сотрудника."""
-        add_employee_window = AddEmployeeWindow(self.root, self.db_connector, self.load_employees)
+        AddEmployeeWindow(self.root, self.db_connector, self.load_employees, self.selected_department_id)
+
 
     def load_employees(self, department_id=None):
         """Загружает данные о сотрудниках из базы данных и отображает их в таблице."""
