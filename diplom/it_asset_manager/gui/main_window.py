@@ -129,6 +129,18 @@ class MainWindow:
             print(f"Error loading employees: {e}")
             messagebox.showerror("Ошибка", f"Ошибка при загрузке сотрудников: {e}")
 
+    def load_departments(self):
+        """Загружает отделы из базы данных и отображает их."""
+        departments = self.db_connector.fetch_all_departments()
+        self.clear_department_buttons()  # Очищаем старые кнопки
+        self.create_department_buttons()  # Создаем новые кнопки на основе обновленных данных        
+
+    def clear_department_buttons(self):
+        """Удаляет все кнопки отделов."""
+        for button, _ in self.department_buttons.values():
+            button.destroy()
+        self.department_buttons.clear()
+
     def load_devices(self, department_id=None):
         """Загружает устройства из базы данных и отображает их в Treeview."""
         try:
@@ -153,13 +165,11 @@ class MainWindow:
         """Создает кнопки для каждого отдела."""
         departments = self.db_connector.fetch_all_departments()
         if departments:
-            button_font = font.Font(size=8)  # Уменьшаем шрифт
+            button_font = font.Font(size=8)
 
-            # Словари для хранения ID отделов
             department_ids = {}
 
             for i, department in enumerate(departments):
-                # Сохраняем ID отдела в словаре
                 department_ids[department.name] = department.id
                 print(f"ID {department.name}: {department.id}")
 
@@ -168,20 +178,30 @@ class MainWindow:
 
                 target_department_id = None
 
-                if department.name == "Отдел тестирования" and "Отдел разработки" in department_ids:
-                    target_department_id = department_ids["Отдел разработки"]
-                    print(f"Кнопка Отдел тестирования переходит в Отдел разработки")
-                elif department.name == "Отдел разработки" and "Отдел тестирования" in department_ids:
-                    target_department_id = department_ids["Отдел тестирования"]
-                    print(f"Кнопка Отдел разработки переходит в Отдел тестирования")
-                elif department.name == "Отдел финансов" and "Отдел тестирования" in department_ids:
-                    target_department_id = department_ids["Отдел тестирования"]
-                    print(f"Кнопка Отдел финансов переходит в Отдел тестирования")  # Добавлено правило для отдела финансов
+                # Задаем переходы между отделами (пример)
+                if department.name == "Материальный отдел" and "Расчётный отдел" in department_ids:
+                    target_department_id = department_ids["Расчётный отдел"]
+                    print(f"Кнопка Материальный отдел переходит в Расчётный отдел")
+                elif department.name == "Расчётный отдел" and "Договорный отдел" in department_ids:
+                    target_department_id = department_ids["Договорный отдел"]
+                    print(f"Кнопка Расчётный отдел переходит в Договорный отдел")
+                elif department.name == "Договорный отдел" and "Отдел банковских и кассовых операций" in department_ids:
+                    target_department_id = department_ids["Отдел банковских и кассовых операций"]
+                    print(f"Кнопка Договорный отдел переходит в Отдел банковских и кассовых операций")
+                elif department.name == "Отдел банковских и кассовых операций" and "Экономический отдел" in department_ids:
+                    target_department_id = department_ids["Экономический отдел"]
+                    print(f"Кнопка Отдел банковских и кассовых операций переходит в Экономический отдел")
+                elif department.name == "Экономический отдел" and "Отдел технического обеспечения" in department_ids:
+                    target_department_id = department_ids["Отдел технического обеспечения"]
+                    print(f"Кнопка Экономический отдел переходит в Отдел технического обеспечения")
+                elif department.name == "Отдел технического обеспечения" and "Материальный отдел" in department_ids:
+                    target_department_id = department_ids["Материальный отдел"]
+                    print(f"Кнопка Отдел технического обеспечения переходит в Материальный отдел")
                 else:
                     print(f"Для кнопки {department.name} не задан переход")
 
                 button = ttk.Button(self.department_frame, text=department.name, command=lambda dep=department: self.set_and_load_department(dep.id), style="DepartmentButton.TButton")
-                button.grid(row=1, column=i+2, padx=2, pady=2, sticky="ew")  # Смещаем кнопки вправо
+                button.grid(row=1, column=i+2, padx=2, pady=2, sticky="ew")
                 self.department_frame.columnconfigure(i+2, weight=1)
                 self.department_buttons[department.id] = (button, target_department_id)
 
@@ -207,6 +227,10 @@ class MainWindow:
     def open_add_device_window(self):
         """Открывает окно для добавления нового устройства."""
         AddDeviceWindow(self.root, self.db_connector, self.load_devices, self.selected_department_id)
+
+    def open_add_employee_window(self):
+        """Открывает окно для добавления нового сотрудника."""
+        AddEmployeeWindow(self.root, self.db_connector, self.load_employees, self.selected_department_id)       
 
     def open_edit_device_window(self):
         """Открывает окно редактирования устройства."""
@@ -251,8 +275,8 @@ class MainWindow:
             tk.messagebox.showerror("Ошибка", f"Ошибка при удалении устройства: {e}")
 
     def open_add_department_window(self):
-         """Открывает окно для добавления нового отдела."""
-         AddDepartmentWindow(self.root, self.db_connector, self.create_department_buttons)
+            """Открывает окно для добавления нового отдела."""
+            AddDepartmentWindow(self.root, self.db_connector, self.load_departments) # self.create_department_buttons
 
     def open_edit_department_window(self):
         """Открывает окно редактирования отдела."""
