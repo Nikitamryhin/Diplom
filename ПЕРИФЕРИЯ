@@ -1,0 +1,108 @@
+class PeripheralsWindow(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Управление периферией")
+        self.geometry("1000x400")
+
+        self.create_ui()
+        self.load_peripherals()
+
+    def create_ui(self):
+        self.peripherals_tree = ttk.Treeview(self, columns=(
+        "name", "type", "interface", "manufacturer", "resolution", "print_type", "print_speed", "quantity",
+        "price", "description"),show="headings")
+        self.peripherals_tree.heading("name", text="Название")
+        self.peripherals_tree.heading("type", text="Тип")
+        self.peripherals_tree.heading("interface", text="Интерфейс")
+        self.peripherals_tree.heading("manufacturer", text="Производитель")
+        self.peripherals_tree.heading("resolution", text="Разрешение")
+        self.peripherals_tree.heading("print_type", text="Тип печати")
+        self.peripherals_tree.heading("print_speed", text="Скорость печати")
+        self.peripherals_tree.heading("quantity", text="Количество")
+        self.peripherals_tree.heading("price", text="Цена")
+        self.peripherals_tree.heading("description", text="Описание")
+
+        # Устанавливаем ширину столбцов
+        self.peripherals_tree.column("name", width=100)
+        self.peripherals_tree.column("type", width=80)
+        self.peripherals_tree.column("interface", width=80)
+        self.peripherals_tree.column("manufacturer", width=100)
+        self.peripherals_tree.column("resolution", width=80)
+        self.peripherals_tree.column("print_type", width=80)
+        self.peripherals_tree.column("print_speed", width=80)
+        self.peripherals_tree.column("quantity", width=50)
+        self.peripherals_tree.column("price", width=50)
+        self.peripherals_tree.column("description", width=150, stretch=True)
+
+        self.peripherals_tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Кнопки управления
+        self.buttons_frame = ttk.Frame(self)
+        self.buttons_frame.pack(pady=5)
+
+        self.add_button = ttk.Button(self.buttons_frame, text="Добавить", command=self.add_peripheral)
+        self.add_button.pack(side=tk.LEFT, padx=2)
+
+        self.edit_button = ttk.Button(self.buttons_frame, text="Редактировать", command=self.edit_peripheral)
+        self.edit_button.pack(side=tk.LEFT, padx=2)
+
+        self.delete_button = ttk.Button(self.buttons_frame, text="Удалить", command=self.delete_peripheral)
+        self.delete_button.pack(side=tk.LEFT, padx=2)
+
+    def load_peripherals(self):
+        """Загружает список периферии в Treeview"""
+        for item in self.peripherals_tree.get_children():
+            self.peripherals_tree.delete(item)
+
+        peripherals = database.get_peripherals()
+        for peripheral in peripherals:
+            self.peripherals_tree.insert("", tk.END, values=(
+                peripheral[0],  # ID
+                peripheral[1],  # name
+                peripheral[2],  # type
+                peripheral[3],  # interface
+                peripheral[4],  # manufacturer
+                peripheral[5],  # resolution
+                peripheral[6],  # print_type
+                peripheral[7],  # print_speed
+                peripheral[8],  # quantity
+                peripheral[9],  # price
+                peripheral[10]  # description
+            ))
+
+    def add_peripheral(self):
+        """Добавляет новую периферию."""
+        AddPeripheralDialog(self)
+
+    def edit_peripheral(self):
+        """Редактирует выбранную периферию."""
+        try:
+            selected_item = self.peripherals_tree.selection()[0]
+            peripheral_id = self.peripherals_tree.item(selected_item)['values'][0]
+            EditPeripheralDialog(self, peripheral_id)
+        except IndexError:
+            messagebox.showinfo("Внимание", "Выберите периферию для редактирования.", parent=self)
+
+    def delete_peripheral(self):
+        """Удаляет выбранную периферию."""
+        try:
+            selected_item = self.peripherals_tree.selection()[0]
+            peripheral_id = self.peripherals_tree.item(selected_item, 'values')[0]  # Получаем ID из первого столбца
+
+            try:
+                peripheral_id = int(peripheral_id)  # Пытаемся преобразовать в целое число
+            except ValueError:
+                messagebox.showerror("Ошибка", "Некорректный ID периферии.")
+                return
+
+            print(f"Удаляем периферию с ID: {peripheral_id}")  # Добавленная строка отладки
+            if messagebox.askyesno("Удаление периферии",
+                                      "Вы уверены, что хотите удалить эту периферию?", parent=self):
+                database.delete_peripheral(peripheral_id)
+                print("Удаление выполнено.")  # Добавленная строка отладки
+                self.load_peripherals()
+            else:
+                print("Удаление отменено.")  # Добавленная строка отладки
+        except IndexError:
+            print("Не выбрана периферия для удаления.")  # Добавленная строка отладки
+            messagebox.showinfo("Внимание", "Выберите периферию для удаления.", parent=self)
