@@ -147,16 +147,14 @@ class MainWindow(tk.Tk):
         self.save_button["state"] = tk.DISABLED
 
         # --- Menu ---
-        menubar = tk.Menu(self)
-        filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Устройства", command=self.open_ystr_window)
-        filemenu.add_command(label="Отчеты", command=self.open_othet_window)
-        filemenu.add_command(label="Управление периферией", command=self.open_peripherals_window)  # Добавляем пункт в меню
-        filemenu.add_separator()
-        filemenu.add_command(label="Выход", command=self.quit)
-        menubar.add_cascade(label="Файл", menu=filemenu)
-        self.config(menu=menubar)
-
+        self.menu_bar = tk.Menu(self)
+        self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.file_menu.add_command(label="Сформировать отчет об устройствах", command=self.open_devices_report_window)
+        self.file_menu.add_command(label="Сформировать отчет о периферии", command=self.open_peripherals_report_window)
+        self.file_menu.add_command(label="Управление периферией", command=self.open_peripherals_window)
+        self.menu_bar.add_cascade(label="Файл", menu=self.file_menu)
+        self.config(menu=self.menu_bar)
+        
         # ---  Периферия ---
         self.peripherals_label = ttk.Label(self.info_frame, text="Периферия:")
         self.peripherals_label.pack(pady=2)
@@ -181,6 +179,14 @@ class MainWindow(tk.Tk):
         self.grid_columnconfigure(1, weight=2)  # Информация о компьютере занимает больше места
         self.grid_rowconfigure(0, weight=1)  # Список отделов и информация расширяются по вертикали
         self.grid_rowconfigure(1, weight=1)  # Список компьютеров расширяются по вертикали
+
+    def open_devices_report_window(self):
+        """Открывает окно для создания отчета об устройствах"""
+        DevicesReportWindow(self)
+
+    def open_peripherals_report_window(self):
+        """Открывает окно для создания отчета о периферии"""
+        PeripheralsReportWindow(self)
 
     def open_peripherals_window(self):
         self.peripherals_window = PeripheralsWindow(self)  # Создаём окно периферии
@@ -442,14 +448,10 @@ class DevicesReportWindow(tk.Toplevel):
                     for device in devices:
                         report_text += f"  ID: {device[0]}\n"
                         report_text += f"  Тип: {device[2]}\n"
-                        report_text += f"  Модель: {device[3]}\n"
-                        report_text += f"  Серийный номер: {device[4]}\n"
-                        report_text += f"  Инвентарный номер: {device[5]}\n"
-                        report_text += f"  CPU: {device[6]}\n"
-                        report_text += f"  Memory: {device[7]}\n"
-                        report_text += f"  HDD: {device[8]}\n"
-                        report_text += f"  GPU: {device[9]}\n"
-                        report_text += f"  Статус: {device[10]}\n\n"
+                        report_text += f"  Интерфейс: {device[3]}\n"
+                        report_text += f"  Производитель: {device[4]}\n"
+                        report_text += f"  Разрешение: {device[5]}\n"
+                        report_text += f"  Описание: {device[6]}\n\n"
                 else:
                     report_text += f"  В отделе {department[1]} нет устройств.\n\n"
 
