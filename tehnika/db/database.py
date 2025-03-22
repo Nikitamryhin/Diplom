@@ -279,6 +279,18 @@ def get_device(id):
     connection.close()
     return device
 
+def update_peripheral(id, name, type, interface, manufacturer, resolution, print_type, print_speed, quantity, price, description):
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute("""
+        UPDATE Peripherals
+        SET name=?, type=?, interface=?, manufacturer=?, resolution=?,
+            print_type=?, print_speed=?, quantity=?, price=?, description=?
+        WHERE id=?
+    """, (name, type, interface, manufacturer, resolution, print_type, print_speed, quantity, price, description, id))
+    connection.commit()
+    connection.close()
+
 def add_software_to_device(device_id, name, version):
     """Добавляет новое ПО к устройству."""
     conn = create_connection()
