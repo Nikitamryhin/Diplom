@@ -600,8 +600,9 @@ class PeripheralsWindow(tk.Toplevel):
 
     def create_ui(self):
         self.peripherals_tree = ttk.Treeview(self, columns=(
-        "name", "type", "interface", "manufacturer", "resolution", "print_type", "print_speed", "quantity",
-        "price", "description"),show="headings")
+            "id", "name", "type", "interface", "manufacturer", "resolution", "print_type", "print_speed", "quantity",
+            "price", "description"), show="headings") # Убрали "id" из show="headings"
+        self.peripherals_tree.heading("id", text="ID") # Не показываем заголовок для ID
         self.peripherals_tree.heading("name", text="Название")
         self.peripherals_tree.heading("type", text="Тип")
         self.peripherals_tree.heading("interface", text="Интерфейс")
@@ -641,42 +642,38 @@ class PeripheralsWindow(tk.Toplevel):
         self.delete_button.pack(side=tk.LEFT, padx=2)
 
     def load_peripherals(self):
-            """Загружает список периферии в Treeview"""
-            for item in self.peripherals_tree.get_children():
-                self.peripherals_tree.delete(item)
+        """Загружает список периферии в Treeview"""
+        for item in self.peripherals_tree.get_children():
+            self.peripherals_tree.delete(item)
 
-            peripherals = database.get_peripherals()
-            for peripheral in peripherals:
-                self.peripherals_tree.insert("", tk.END, values=(
-                    peripheral[1],  # name
-                    peripheral[2],  # type
-                    peripheral[3],  # interface
-                    peripheral[4],  # manufacturer
-                    peripheral[5],  # resolution
-                    peripheral[6],  # print_type
-                    peripheral[7],  # print_speed
-                    peripheral[8],  # quantity
-                    peripheral[9],  # price
-                    peripheral[10]  # description
-                ))
+        peripherals = database.get_peripherals()
+        for peripheral in peripherals:
+            self.peripherals_tree.insert("", tk.END, values=(
+                peripheral[0],  # ID
+                peripheral[1],  # name
+                peripheral[2],  # type
+                peripheral[3],  # interface
+                peripheral[4],  # manufacturer
+                peripheral[5],  # resolution
+                peripheral[6],  # print_type
+                peripheral[7],  # print_speed
+                peripheral[8],  # quantity
+                peripheral[9],  # price
+                peripheral[10]  # description
+            ))
 
     def add_peripheral(self):
         """Добавляет новую периферию."""
         AddPeripheralDialog(self)
 
     def edit_peripheral(self):
-            """Редактирует выбранную периферию."""
-            try:
-                selected_item = self.peripherals_tree.selection()[0]
-
-                if selected_item is None:
-                    messagebox.showinfo("Внимание", "Сначала выберите элемент для редактирования", parent=self)
-                    return # Останавливаем выполнение, если selected_item не существует
-
-                peripheral_id = self.peripherals_tree.item(selected_item)['values'][0]
-                EditPeripheralDialog(self, peripheral_id)
-            except IndexError:
-                messagebox.showinfo("Внимание", "Выберите периферию для редактирования.", parent=self)
+        """Редактирует выбранную периферию."""
+        try:
+            selected_item = self.peripherals_tree.selection()[0]
+            peripheral_id = self.peripherals_tree.item(selected_item)['values'][0] # Получаем ID из скрытого столбца
+            EditPeripheralDialog(self, peripheral_id)
+        except IndexError:
+            messagebox.showinfo("Внимание", "Выберите периферию для редактирования.", parent=self)
 
     def delete_peripheral(self):
         """Удаляет выбранную периферию."""
@@ -783,59 +780,63 @@ class EditPeripheralDialog(simpledialog.Dialog):
 
     def body(self, master):
         peripheral = database.get_peripheral(self.peripheral_id)  # Загружаем данные периферии
-        print(f"Данные периферии: {peripheral}") #  Добавленная строка отладки
 
-        ttk.Label(master, text="Название:").grid(row=0, sticky=tk.W)
-        self.name_entry = ttk.Entry(master)
-        self.name_entry.insert(0, peripheral[1])
-        self.name_entry.grid(row=0, column=1, sticky=tk.E)
+        if peripheral: # Проверяем, что peripheral не None
+            ttk.Label(master, text="Название:").grid(row=0, sticky=tk.W)
+            self.name_entry = ttk.Entry(master)
+            self.name_entry.insert(0, peripheral[1])  # Заполняем данными из базы
+            self.name_entry.grid(row=0, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Тип:").grid(row=1, sticky=tk.W)
-        self.type_entry = ttk.Entry(master)
-        self.type_entry.insert(0, peripheral[2])
-        self.type_entry.grid(row=1, column=1, sticky=tk.E)
+            ttk.Label(master, text="Тип:").grid(row=1, sticky=tk.W)
+            self.type_entry = ttk.Entry(master)
+            self.type_entry.insert(0, peripheral[2])
+            self.type_entry.grid(row=1, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Интерфейс:").grid(row=2, sticky=tk.W)
-        self.interface_entry = ttk.Entry(master)
-        self.interface_entry.insert(0, peripheral[3])
-        self.interface_entry.grid(row=2, column=1, sticky=tk.E)
+            ttk.Label(master, text="Интерфейс:").grid(row=2, sticky=tk.W)
+            self.interface_entry = ttk.Entry(master)
+            self.interface_entry.insert(0, peripheral[3])
+            self.interface_entry.grid(row=2, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Производитель:").grid(row=3, sticky=tk.W)
-        self.manufacturer_entry = ttk.Entry(master)
-        self.manufacturer_entry.insert(0, peripheral[4])
-        self.manufacturer_entry.grid(row=3, column=1, sticky=tk.E)
+            ttk.Label(master, text="Производитель:").grid(row=3, sticky=tk.W)
+            self.manufacturer_entry = ttk.Entry(master)
+            self.manufacturer_entry.insert(0, peripheral[4])
+            self.manufacturer_entry.grid(row=3, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Разрешение:").grid(row=4, sticky=tk.W)
-        self.resolution_entry = ttk.Entry(master)
-        self.resolution_entry.insert(0, peripheral[5])
-        self.resolution_entry.grid(row=4, column=1, sticky=tk.E)
+            ttk.Label(master, text="Разрешение:").grid(row=4, sticky=tk.W)
+            self.resolution_entry = ttk.Entry(master)
+            self.resolution_entry.insert(0, peripheral[5])
+            self.resolution_entry.grid(row=4, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Тип печати:").grid(row=5, sticky=tk.W)
-        self.print_type_entry = ttk.Entry(master)
-        self.print_type_entry.insert(0, peripheral[6])
-        self.print_type_entry.grid(row=5, column=1, sticky=tk.E)
+            ttk.Label(master, text="Тип печати:").grid(row=5, sticky=tk.W)
+            self.print_type_entry = ttk.Entry(master)
+            self.print_type_entry.insert(0, peripheral[6])
+            self.print_type_entry.grid(row=5, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Скорость печати:").grid(row=6, sticky=tk.W)
-        self.print_speed_entry = ttk.Entry(master)
-        self.print_speed_entry.insert(0, peripheral[7])
-        self.print_speed_entry.grid(row=6, column=1, sticky=tk.E)
+            ttk.Label(master, text="Скорость печати:").grid(row=6, sticky=tk.W)
+            self.print_speed_entry = ttk.Entry(master)
+            self.print_speed_entry.insert(0, peripheral[7])
+            self.print_speed_entry.grid(row=6, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Количество:").grid(row=7, sticky=tk.W)
-        self.quantity_entry = ttk.Entry(master)
-        self.quantity_entry.insert(0, peripheral[8])
-        self.quantity_entry.grid(row=7, column=1, sticky=tk.E)
+            ttk.Label(master, text="Количество:").grid(row=7, sticky=tk.W)
+            self.quantity_entry = ttk.Entry(master)
+            self.quantity_entry.insert(0, peripheral[8])
+            self.quantity_entry.grid(row=7, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Цена:").grid(row=8, sticky=tk.W)
-        self.price_entry = ttk.Entry(master)
-        self.price_entry.insert(0, peripheral[9])
-        self.price_entry.grid(row=8, column=1, sticky=tk.E)
+            ttk.Label(master, text="Цена:").grid(row=8, sticky=tk.W)
+            self.price_entry = ttk.Entry(master)
+            self.price_entry.insert(0, peripheral[9])
+            self.price_entry.grid(row=8, column=1, sticky=tk.E)
 
-        ttk.Label(master, text="Описание:").grid(row=9, sticky=tk.W)
-        self.description_entry = ttk.Entry(master)
-        self.description_entry.insert(0, peripheral[10])
-        self.description_entry.grid(row=9, column=1, sticky=tk.E)
+            ttk.Label(master, text="Описание:").grid(row=9, sticky=tk.W)
+            self.description_entry = ttk.Entry(master)
+            self.description_entry.insert(0, peripheral[10])
+            self.description_entry.grid(row=9, column=1, sticky=tk.E)
 
-        return self.name_entry
+            return self.name_entry  # Фокус на поле "Название"
+        else:
+            messagebox.showerror("Ошибка", "Не удалось загрузить данные периферии.", parent=self)
+            self.destroy() # Закрываем диалог
+            return None #  Важно вернуть None, чтобы дальше не было ошибок
 
     def apply(self):
         name = self.name_entry.get()
@@ -844,43 +845,21 @@ class EditPeripheralDialog(simpledialog.Dialog):
         manufacturer = self.manufacturer_entry.get()
         resolution = self.resolution_entry.get()
         print_type = self.print_type_entry.get()
-        print_speed = self.print_speed_entry.get()
+        print_speed_str = self.print_speed_entry.get()
         quantity = self.quantity_entry.get()
         price = self.price_entry.get()
         description = self.description_entry.get()
 
         try:
+            print_speed = int(print_speed_str) if print_speed_str else 0
             quantity = int(quantity)
             price = float(price)
-            print_speed = int(print_speed)
         except ValueError:
-            messagebox.showerror("Ошибка", "Некорректные значения для количества, цены или скорости печати.")
+            messagebox.showerror("Ошибка", "Некорректные значения в полях 'Количество', 'Цена' или 'Скорость печати'.", parent=self)
             return
 
-        try:
-            conn = database.create_connection()
-            cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE Peripherals
-                SET name=?, type=?, interface=?, manufacturer=?, resolution=?,
-                    print_type=?, print_speed=?, quantity=?, price=?, description=?
-                WHERE id=?
-            """, (name, type, interface, manufacturer, resolution, print_type, print_speed,
-                    quantity, price, description, self.peripheral_id))
-            conn.commit()
-            conn.close()
-
-            # Обновляем строку в Treeview
-            selected_item = self.parent.peripherals_tree.selection()[0]
-            self.parent.peripherals_tree.item(selected_item, values=(
-                name, type, interface, manufacturer, resolution, print_type, print_speed,
-                quantity, price, description
-            ))
-            messagebox.showinfo("Информация", "Периферия успешно отредактирована.")
-            self.destroy()  # Закрываем диалог
-        except sqlite3.Error as e:
-            messagebox.showerror("Ошибка", f"Ошибка при редактировании периферии: {e}")
-
+        database.update_peripheral(self.peripheral_id, name, type, interface, manufacturer, resolution, print_type, print_speed, quantity, price, description)
+        self.parent.load_peripherals()
 #  Удалите класс AddDevicePeripheralDialog
 #class AddDevicePeripheralDialog(simpledialog.Dialog):
 #    def __init__(self, parent, device_id):
