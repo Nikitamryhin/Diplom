@@ -154,7 +154,6 @@ class MainWindow(tk.Tk):
         self.file_menu.add_command(label="Управление периферией", command=self.open_peripherals_window)
         self.menu_bar.add_cascade(label="Файл", menu=self.file_menu)
         self.config(menu=self.menu_bar)
-        
         # ---  Периферия ---
         self.peripherals_label = ttk.Label(self.info_frame, text="Периферия:")
         self.peripherals_label.pack(pady=2)
